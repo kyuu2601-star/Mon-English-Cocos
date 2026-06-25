@@ -1,1 +1,0 @@
-window._CCSettings={platform:"web-mobile",groupList:["MainMenu","BattleStage"],collisionMatrix:[[true],[false,true]],hasResourcesBundle:false,hasStartSceneBundle:false,remoteBundles:[],subpackages:[],launchScene:"db://assets/Scenes/MainMenu.fire",orientation:"",jsList:[]};
