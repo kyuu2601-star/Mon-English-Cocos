@@ -1,90 +1,180 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon English - GM Tool (Cheat Panel)</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 20px; display: flex; gap: 20px; height: 100vh; }
+        
+        /* CỘT TRÁI: CHEAT PANEL */
+        .cheat-panel { flex: 0 0 350px; background: #252526; padding: 20px; border-radius: 8px; border: 1px solid #333; height: fit-content; }
+        .cheat-panel h2 { margin-top: 0; color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #9cdcfe; }
+        .form-group input { width: 100%; padding: 10px; background: #3c3c3c; border: 1px solid #555; color: #fff; border-radius: 4px; outline: none; }
+        .form-group input:focus { border-color: #007acc; }
+        button { width: 100%; padding: 12px; background: #007acc; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #0098ff; }
+        #status-msg { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; min-height: 20px; }
+        .success { color: #4CAF50; } .error { color: #f44336; }
 
-  <title>Cocos Creator | Mon-English</title>
-
-  <!--http://www.html5rocks.com/en/mobile/mobifying/-->
-  <meta name="viewport"
-        content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"/>
-
-  <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
-
-  <!-- force webkit on 360 -->
-  <meta name="renderer" content="webkit"/>
-  <meta name="force-rendering" content="webkit"/>
-  <!-- force edge on IE -->
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-  <meta name="msapplication-tap-highlight" content="no">
-
-  <!-- force full screen on some browser -->
-  <meta name="full-screen" content="yes"/>
-  <meta name="x5-fullscreen" content="true"/>
-  <meta name="360-fullscreen" content="true"/>
-  
-  <!-- force screen orientation on some browser -->
-  <meta name="screen-orientation" content=""/>
-  <meta name="x5-orientation" content="">
-
-  <!--fix fireball/issues/3568 -->
-  <!--<meta name="browsermode" content="application">-->
-  <meta name="x5-page-mode" content="app">
-
-  <!--<link rel="apple-touch-icon" href=".png" />-->
-  <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
-
-  <link rel="stylesheet" type="text/css" href="style-mobile.css"/>
-  <link rel="icon" href="favicon.ico"/>
+        /* CỘT PHẢI: BẢNG DATA */
+        .data-panel { flex: 1; background: #252526; padding: 20px; border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; overflow: hidden; }
+        .data-panel h2 { margin-top: 0; color: #4EC9B0; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between;}
+        .data-panel h2 span { font-size: 12px; color: #888; font-weight: normal; align-self: flex-end; }
+        .table-container { flex: 1; overflow-y: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; }
+        th { background: #333333; color: #dcdcaa; position: sticky; top: 0; }
+        tr:hover { background: #2a2d2e; }
+        .json-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; color: #ce9178; }
+    </style>
 </head>
 <body>
-  <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
-  <div id="splash">
-    <div class="progress-bar stripes">
-      <span style="width: 0%"></span>
+
+    <div class="cheat-panel">
+        <h2>🛠️ Bơm Đồ (Cheat)</h2>
+        <form id="cheatForm">
+            <div class="form-group">
+                <label>Username (Bắt buộc):</label>
+                <input type="text" id="username" placeholder="Nhập tên tài khoản..." required>
+            </div>
+            <div class="form-group">
+                <label>ID Mon:</label>
+                <input type="text" id="mon_id" placeholder="VD: 1001, E01...">
+            </div>
+            <div class="form-group">
+                <label>Số Lượng Mon:</label>
+                <input type="number" id="mon_qty" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>Cộng thêm Coin:</label>
+                <input type="number" id="coin" placeholder="Nhập số coin...">
+            </div>
+            <div class="form-group">
+                <label>Cộng thêm Energy:</label>
+                <input type="number" id="energy" placeholder="Nhập số năng lượng...">
+            </div>
+            <button type="submit">⚡ THỰC THI LỆNH</button>
+        </form>
+        <div id="status-msg"></div>
     </div>
-  </div>
 
-<script src="src/settings.js" charset="utf-8"></script>
+    <div class="data-panel">
+        <h2>📊 Live Database D1 <span id="last-update">Đang tải...</span></h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Coins (Current)</th>
+                        <th>Total Coins</th>
+                        <th>Energy</th>
+                        <th>Captured Mons (JSON)</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
-<script src="main.js" charset="utf-8"></script>
+    <script>
+        const WORKER_URL = "https://sync-sheet-worker.kyuu2601.workers.dev"; // Điền đúng link worker của fen
 
-<script type="text/javascript">
-(function () {
-    // open web debugger console
-    if (typeof VConsole !== 'undefined') {
-        window.vConsole = new VConsole();
-    }
+        // --- XỬ LÝ SUBMIT FORM CHEAT ---
+        document.getElementById('cheatForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const statusMsg = document.getElementById('status-msg');
+            const btn = document.querySelector('button');
+            
+            const payload = {
+                username: document.getElementById('username').value.trim(),
+                mon_id: document.getElementById('mon_id').value.trim(),
+                mon_qty: document.getElementById('mon_qty').value || 0,
+                coin: document.getElementById('coin').value || 0,
+                energy: document.getElementById('energy').value || 0
+            };
 
-    var debug = window._CCSettings.debug;
-    var splash = document.getElementById('splash');
-    splash.style.display = 'block';
+            btn.disabled = true;
+            btn.innerText = "ĐANG BƠM...";
+            statusMsg.className = "";
+            statusMsg.innerText = "Đang kết nối Server Edge...";
 
-    function loadScript (moduleName, cb) {
-      function scriptLoaded () {
-          document.body.removeChild(domScript);
-          domScript.removeEventListener('load', scriptLoaded, false);
-          cb && cb();
-      };
-      var domScript = document.createElement('script');
-      domScript.async = true;
-      domScript.src = moduleName;
-      domScript.addEventListener('load', scriptLoaded, false);
-      document.body.appendChild(domScript);
-    }
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/cheat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
 
-    loadScript(debug ? 'cocos2d-js.js' : 'cocos2d-js-min.js', function () {
-      if (CC_PHYSICS_BUILTIN || CC_PHYSICS_CANNON) {
-        loadScript(debug ? 'physics.js' : 'physics-min.js', window.boot);
-      }
-      else {
-        window.boot();
-      }
-    });
-})();
-</script>
+                if (data.success) {
+                    statusMsg.className = "success";
+                    statusMsg.innerText = data.message || "✅ Bơm đồ thành công!";
+                    // Xóa trắng form để cheat đứa khác cho lẹ (Trừ username giữ lại nếu muốn cheat tiếp)
+                    document.getElementById('mon_id').value = "";
+                    document.getElementById('mon_qty').value = "";
+                    document.getElementById('coin').value = "";
+                    document.getElementById('energy').value = "";
+                    fetchUsersData(); // Ép làm mới bảng ngay lập tức
+                } else {
+                    statusMsg.className = "error";
+                    statusMsg.innerText = "❌ Lỗi: " + (data.message || data.error);
+                }
+            } catch (err) {
+                statusMsg.className = "error";
+                statusMsg.innerText = "❌ Lỗi kết nối mạng!";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "⚡ THỰC THI LỆNH";
+                setTimeout(() => statusMsg.innerText = "", 4000);
+            }
+        });
+
+        // --- XỬ LÝ POLLING LẤY DATA LIÊN TỤC TỪ D1 ---
+        async function fetchUsersData() {
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/get-all-users`);
+                const data = await res.json();
+                
+                if (data.success && Array.isArray(data.data)) {
+                    const tbody = document.getElementById('table-body');
+                    tbody.innerHTML = ""; // Xóa dữ liệu cũ
+                    
+                    data.data.forEach(user => {
+                        const tr = document.createElement('tr');
+                        
+                        // Click vào dòng nào tự động điền Username qua ô Cheat bên trái cho lẹ
+                        tr.style.cursor = "pointer";
+                        tr.onclick = () => document.getElementById('username').value = user.username || "";
+
+                        tr.innerHTML = `
+                            <td><strong>${user.username || 'Unknown'}</strong></td>
+                            <td style="color: #ffcc00; font-weight: bold;">${user.coins || 0}</td>
+                            <td>${user.total_coins || 0}</td>
+                            <td style="color: #00ffcc;">${user.energy || 0}</td>
+                            <td class="json-cell" title='${user.captured || "{}"}'>${user.captured || "{}"}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    let now = new Date();
+                    document.getElementById('last-update').innerText = `Làm mới lúc: ${now.toLocaleTimeString()}`;
+                }
+            } catch (err) {
+                console.error("Lỗi lấy dữ liệu D1:", err);
+                document.getElementById('last-update').innerText = "Mất kết nối server!";
+            }
+        }
+
+        // Khởi động lấy data lần đầu tiên
+        fetchUsersData();
+
+        // Cài đặt bộ đếm (Polling) liên tục 3 giây / lần y chang Chat
+        setInterval(fetchUsersData, 3000);
+    </script>
 </body>
 </html>
