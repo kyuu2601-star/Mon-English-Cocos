@@ -3,138 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon English - GM Tool (Cheat Panel)</title>
+    <title>Mon English - GM Tool (Advanced Multi-Panel)</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 20px; display: flex; gap: 20px; height: 100vh; }
+        body { background-color: #1e1e1e; color: #d4d4d4; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* CỘT TRÁI: CHEAT PANEL */
-        .cheat-panel { flex: 0 0 350px; background: #252526; padding: 20px; border-radius: 8px; border: 1px solid #333; height: fit-content; }
-        .cheat-panel h2 { margin-top: 0; color: #569cd6; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #9cdcfe; }
-        .form-group input { width: 100%; padding: 10px; background: #3c3c3c; border: 1px solid #555; color: #fff; border-radius: 4px; outline: none; }
-        .form-group input:focus { border-color: #007acc; }
-        button { width: 100%; padding: 12px; background: #007acc; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #0098ff; }
-        #status-msg { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; min-height: 20px; }
-        .success { color: #4CAF50; } .error { color: #f44336; }
+        /* 🎛️ THANH MENU NAVIGATION TABS ĐỈNH TRANG */
+        .tab-navigation { display: flex; background: #2d2d2d; padding: 5px 10px 0 10px; border-bottom: 2px solid #3c3c3c; gap: 5px; flex: 0 0 auto; }
+        .tab-item { padding: 10px 20px; background: #252526; color: #858585; border: 1px solid #333; border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s ease-in-out; }
+        .tab-item:hover { background: #2a2a2b; color: #cccccc; }
+        .tab-item.active { background: #1e1e1e; color: #569cd6; border-top: 3px solid #007acc; border-bottom: 1px solid #1e1e1e; margin-bottom: -1px; }
 
-        /* CỘT PHẢI: BẢNG DATA */
-        .data-panel { flex: 1; background: #252526; padding: 20px; border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; overflow: hidden; }
-        .data-panel h2 { margin-top: 0; color: #4EC9B0; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; justify-content: space-between;}
-        .data-panel h2 span { font-size: 12px; color: #888; font-weight: normal; align-self: flex-end; }
-        .table-container { flex: 1; overflow-y: auto; margin-top: 10px; }
+        /* VÙNG NỘI DUNG CHỨA CÁC PANEL */
+        .viewport-container { flex: 1; padding-top: 20px; overflow: hidden; display: flex; flex-direction: column; }
+        .panel-content { display: none; width: 100%; height: 100%; background: #252526; border-radius: 8px; border: 1px solid #333; padding: 20px; flex-direction: column; overflow: hidden; }
+        .panel-content.active { display: flex; }
+
+        /* 📊 CẤU TRÚC TAB 1: LIVE DATABASE TOÀN MÀN HÌNH */
+        .panel-content h2 { margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .panel-content h2.user-title { color: #4EC9B0; }
+        .panel-content h2.cheat-title { color: #569cd6; }
+        .panel-content h2.world-title { color: #ce9178; }
+        .panel-content h2.orch-title { color: #dcdcaa; }
+        .panel-content h2 span { font-size: 13px; color: #888; font-weight: normal; }
+        
+        .table-container { flex: 1; overflow-y: auto; margin-top: 10px; border: 1px solid #2d2d2d; border-radius: 4px; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 12px; border-bottom: 1px solid #333; }
-        th { background: #333333; color: #dcdcaa; position: sticky; top: 0; }
-        tr:hover { background: #2a2d2e; }
-        .json-cell { max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; color: #ce9178; }
+        th, td { padding: 12px; border-bottom: 1px solid #333; font-size: 14px; }
+        th { background: #333333; color: #dcdcaa; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #2d2d2d; }
+        tr.user-row { cursor: pointer; transition: 0.15s; }
+        tr.user-row:hover { background: #2a2d2e; }
+        .json-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; color: #ce9178; }
+
+        /* 🛠️ CẤU TRÚC PHÒNG FORM CỦA TAB 2, 3, 4 */
+        .centered-form-wrapper { max-width: 600px; width: 100%; margin: 0 auto; overflow-y: auto; padding-right: 10px; }
+        .form-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width-column { grid-column: span 2; }
+        
+        .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 6px; font-weight: bold; font-size: 14px; color: #9cdcfe; }
+        .form-group input { width: 100%; padding: 11px; background: #3c3c3c; border: 1px solid #555; color: #fff; border-radius: 4px; outline: none; font-size: 14px; transition: 0.2s; }
+        .form-group input:focus { border-color: #007acc; background: #444444; }
+        .form-group input::placeholder { color: #777; font-size: 13px; }
+        
+        /* NÚT BẤM VÀ THÔNG BÁO */
+        button.btn-execute { width: 100%; padding: 14px; color: white; border: none; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        button.btn-user-color { background: #007acc; }
+        button.btn-user-color:hover { background: #0098ff; }
+        button.btn-world-color { background: #e57373; }
+        button.btn-world-color:hover { background: #ef5350; }
+        button.btn-orch-color { background: #4caf50; }
+        button.btn-orch-color:hover { background: #66bb6a; }
+        button:disabled { background: #555555 !important; color: #888888 !important; cursor: not-allowed; }
+        
+        .status-msg-box { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; min-height: 22px; transition: 0.2s; }
+        .success-text { color: #4CAF50; }
+        .error-text { color: #f44336; }
+        .info-text { color: #9cdcfe; }
     </style>
 </head>
 <body>
 
-    <div class="cheat-panel">
-        <h2>🛠️ Bơm Đồ (Cheat)</h2>
-        <form id="cheatForm">
-            <div class="form-group">
-                <label>Username (Bắt buộc):</label>
-                <input type="text" id="username" placeholder="Nhập tên tài khoản..." required>
-            </div>
-            <div class="form-group">
-                <label>ID Mon:</label>
-                <input type="text" id="mon_id" placeholder="VD: 1001, E01...">
-            </div>
-            <div class="form-group">
-                <label>Số Lượng Mon:</label>
-                <input type="number" id="mon_qty" placeholder="0">
-            </div>
-            <div class="form-group">
-                <label>Cộng thêm Coin:</label>
-                <input type="number" id="coin" placeholder="Nhập số coin...">
-            </div>
-            <div class="form-group">
-                <label>Cộng thêm Energy:</label>
-                <input type="number" id="energy" placeholder="Nhập số năng lượng...">
-            </div>
-            <button type="submit">⚡ THỰC THI LỆNH</button>
-        </form>
-        <div id="status-msg"></div>
+    <div class="tab-navigation">
+        <div id="tab-btn-1" class="tab-item active" onclick="switchActiveTab(1)">📊 (Tab 1) Live DB Users</div>
+        <div id="tab-btn-2" class="tab-item" onclick="switchActiveTab(2)">👤 (Tab 2) Advanced User Cheat</div>
+        <div id="tab-btn-3" class="tab-item" onclick="switchActiveTab(3)">🏡 (Tab 3) Farm World Cheat</div>
+        <div id="tab-btn-4" class="tab-item" onclick="switchActiveTab(4)">🌐 (Tab 4) World Orchestrator</div>
     </div>
 
-    <div class="data-panel">
-        <h2>📊 Live Database D1 <span id="last-update">Đang tải...</span></h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Username</th>
-                        <th>Coins (Current)</th>
-                        <th>Total Coins</th>
-                        <th>Energy</th>
-                        <th>Captured Mons (JSON)</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    </tbody>
-            </table>
+    <div class="viewport-container">
+
+        <div id="panel-content-1" class="panel-content active">
+            <h2 class="user-title">📊 Live Database Users (Cloudflare D1) <span id="last-update">Đang quét...</span></h2>
+            <div style="background: #2d2d2d; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 13px; color: #888;">
+                💡 <strong>Mẹo GM:</strong> Nhấp chuột vào bất kỳ dòng hàng của người chơi nào bên dưới để hệ thống tự động găm tên tài khoản đó sang Form nhập liệu ở Tab 2 và Tab 4!
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Coins (Current)</th>
+                            <th>Total Coins</th>
+                            <th>Energy (Quiz)</th>
+                            <th>Farm Energy</th>
+                            <th>Upgrade Coins</th>
+                            <th>Skin ID</th>
+                            <th>World ID</th>
+                            <th>Captured Mons (JSON)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        </tbody>
+                </table>
+            </div>
         </div>
+
+        <div id="panel-content-2" class="panel-content">
+            <h2 class="cheat-title">👤 Can Thiệp Tài Khoản Cá Nhân Học Sinh</h2>
+            <div class="centered-form-wrapper">
+                <form id="userCheatForm" class="form-grid-layout">
+                    <div class="form-group full-width-column">
+                        <label>Username học sinh (Bắt buộc):</label>
+                        <input type="text" id="user_username" placeholder="Nhập tên tài khoản học sinh hoặc click chọn ở Tab 1..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cộng thêm Xu thường (Coins):</label>
+                        <input type="number" id="user_coin" placeholder="Ví dụ: 100, -50...">
+                    </div>
+                    <div class="form-group">
+                        <label>Cộng thêm Xu nâng cấp (Upgrade):</label>
+                        <input type="number" id="user_upgrade_coins" placeholder="Ví dụ: 10, 25...">
+                    </div>
+                    <div class="form-group">
+                        <label>Cộng thêm Thể lực cày vườn:</label>
+                        <input type="number" id="user_farm_energy" placeholder="Ví dụ: 20, 50...">
+                    </div>
+                    <div class="form-group">
+                        <label>Cộng thêm Thể lực đấu trường:</label>
+                        <input type="number" id="user_energy" placeholder="Ví dụ: 5, 10...">
+                    </div>
+                    <div class="form-group">
+                        <label>Bơm ID thú thú cưng (Mon ID):</label>
+                        <input type="text" id="user_mon_id" placeholder="Ví dụ: 1001, E02...">
+                    </div>
+                    <div class="form-group">
+                        <label>Số lượng thú cưng nạp thêm:</label>
+                        <input type="number" id="user_mon_qty" placeholder="Nhập số lượng, ví dụ: 1...">
+                    </div>
+                    <div class="form-group full-width-column">
+                        <label>Ép thay đổi trang phục Avatar (Skin ID):</label>
+                        <input type="text" id="user_current_skin_id" placeholder="Nhập chuỗi định danh, ví dụ: Avatar_2, Avatar_3...">
+                    </div>
+                    <div class="full-width-column">
+                        <button type="submit" id="btn-submit-2" class="btn-execute btn-user-color">⚡ THỰC THI LỆNH USER CHEAT</button>
+                        <div id="status-msg-2" class="status-msg-box"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="panel-content-3" class="panel-content">
+            <h2 class="world-title">🏡 Can Thiệp Thế Giới Nông Trại Chung (Farm World Assets)</h2>
+            <div class="centered-form-wrapper">
+                <form id="worldCheatForm" class="form-grid-layout">
+                    <div class="form-group full-width-column">
+                        <label>Mã định danh Phòng chơi (Room ID / Bắt buộc):</label>
+                        <input type="text" id="world_room_id" placeholder="Ví dụ: global_room_01, global_room_02..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cộng thêm Quỹ xu chung phòng:</label>
+                        <input type="number" id="world_farm_coins" placeholder="Nhập số tiền nạp thêm vào quỹ phòng...">
+                    </div>
+                    <div class="form-group">
+                        <label>Ép đặt cấp độ Nhà chung (Level):</label>
+                        <input type="number" id="world_house_level" placeholder="Nhập cấp độ ép đặt, ví dụ: 1, 2, 3...">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên vật phẩm nạp kho tài nguyên:</label>
+                        <input type="text" id="world_item_id" placeholder="Ví dụ: wood_log, mine_stone, crop_potato...">
+                    </div>
+                    <div class="form-group">
+                        <label>Số lượng tài nguyên cộng/trừ:</label>
+                        <input type="number" id="world_item_qty" placeholder="Ví dụ: 5, 10, -3...">
+                    </div>
+                    <div class="full-width-column">
+                        <button type="submit" id="btn-submit-3" class="btn-execute btn-world-color">⚡ THỰC THI LỆNH WORLD CHEAT</button>
+                        <div id="status-msg-3" class="status-msg-box"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="panel-content-4" class="panel-content">
+            <h2 class="orch-title">🌐 MMO World Orchestrator (Tạo Thế Giới & Điều Tuyến Học Sinh)</h2>
+            <div class="centered-form-wrapper">
+                <form id="orchForm" class="form-grid-layout">
+                    <div class="form-group full-width-column">
+                        <label>Mã sảnh thế giới online đích (Target Room ID):</label>
+                        <input type="text" id="orch_room_id" placeholder="Nhập mã phòng muốn chuyển đến hoặc tạo mới..." required>
+                    </div>
+                    <div class="form-group full-width-column">
+                        <label>Username học sinh cần định tuyến di chuyển:</label>
+                        <input type="text" id="orch_username" placeholder="Nhập tên tài khoản hoặc click chọn ở Tab 1..." required>
+                    </div>
+                    <div class="full-width-column" style="background: #2d2d2d; padding: 15px; border-radius: 6px; font-size: 13px; color: #aaa; border: 1px dashed #444; margin-bottom: 10px;">
+                        ⚠️ <strong>Giải thuật MMO Router vận hành ngầm:</strong> Lệnh này sẽ thực hiện rà quét diện rộng. Nếu phòng online đích chưa tồn tại, hệ thống tự động đúc mới ở cấp độ 1 với hòm đồ rỗng. Sau đó, ép ngắt gắc cắm mạng của học sinh khỏi phòng cũ, thọc sâu găm danh tính đứa này vào sảnh trực tuyến mới ngay lập tức.
+                    </div>
+                    <div class="full-width-column">
+                        <button type="submit" id="btn-submit-4" class="btn-execute btn-orch-color">🚀 KÍCH NỔ ĐIỀU TUYẾN ROUTER</button>
+                        <div id="status-msg-4" class="status-msg-box"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        const WORKER_URL = "https://sync-sheet-worker.kyuu2601.workers.dev"; // Điền đúng link worker của fen
+        // Địa chỉ kết nối Edge Cloudflare Worker
+        const WORKER_URL = "https://sync-sheet-worker.kyuu2601.workers.dev"; 
 
-        // --- XỬ LÝ SUBMIT FORM CHEAT ---
-        document.getElementById('cheatForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const statusMsg = document.getElementById('status-msg');
-            const btn = document.querySelector('button');
-            
-            const payload = {
-                username: document.getElementById('username').value.trim(),
-                mon_id: document.getElementById('mon_id').value.trim(),
-                mon_qty: document.getElementById('mon_qty').value || 0,
-                coin: document.getElementById('coin').value || 0,
-                energy: document.getElementById('energy').value || 0
-            };
-
-            btn.disabled = true;
-            btn.innerText = "ĐANG BƠM...";
-            statusMsg.className = "";
-            statusMsg.innerText = "Đang kết nối Server Edge...";
-
-            try {
-                const res = await fetch(`${WORKER_URL}/admin/cheat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    statusMsg.className = "success";
-                    statusMsg.innerText = data.message || "✅ Bơm đồ thành công!";
-                    // Xóa trắng form để cheat đứa khác cho lẹ (Trừ username giữ lại nếu muốn cheat tiếp)
-                    document.getElementById('mon_id').value = "";
-                    document.getElementById('mon_qty').value = "";
-                    document.getElementById('coin').value = "";
-                    document.getElementById('energy').value = "";
-                    fetchUsersData(); // Ép làm mới bảng ngay lập tức
-                } else {
-                    statusMsg.className = "error";
-                    statusMsg.innerText = "❌ Lỗi: " + (data.message || data.error);
-                }
-            } catch (err) {
-                statusMsg.className = "error";
-                statusMsg.innerText = "❌ Lỗi kết nối mạng!";
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "⚡ THỰC THI LỆNH";
-                setTimeout(() => statusMsg.innerText = "", 4000);
+        // ==========================================
+        // 🎛️ COOC XỬ LÝ CHUYỂN ĐỔI TAB HOÁN ĐỔI LƯỚT ĐỘNG
+        // ==========================================
+        function switchActiveTab(tabIdx) {
+            // Quét sạch trạng thái active cũ của thanh phím hướng
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`tab-btn-${i}`).classList.remove('active');
+                document.getElementById(`panel-content-${i}`).classList.remove('active');
             }
-        });
+            // Đắp active vào panel và nút được click trỏ tới
+            document.getElementById(`tab-btn-${tabIdx}`).classList.add('active');
+            document.getElementById(`panel-content-${tabIdx}`).classList.add('active');
+        }
 
-        // --- XỬ LÝ POLLING LẤY DATA LIÊN TỤC TỪ D1 ---
+        // ==========================================
+        // 📊 TAB 1: POLLING CÀO DỮ LIỆU ĐÁM MÂY DIỆN RỘNG (3S/LẦN)
+        // ==========================================
         async function fetchUsersData() {
             try {
                 const res = await fetch(`${WORKER_URL}/admin/get-all-users`);
@@ -142,20 +228,30 @@
                 
                 if (data.success && Array.isArray(data.data)) {
                     const tbody = document.getElementById('table-body');
-                    tbody.innerHTML = ""; // Xóa dữ liệu cũ
+                    tbody.innerHTML = ""; // Giải phóng cấu trúc HTML cũ
                     
                     data.data.forEach(user => {
                         const tr = document.createElement('tr');
+                        tr.className = "user-row";
                         
-                        // Click vào dòng nào tự động điền Username qua ô Cheat bên trái cho lẹ
-                        tr.style.cursor = "pointer";
-                        tr.onclick = () => document.getElementById('username').value = user.username || "";
+                        // Cơ chế ĐỒNG BỘ CHÉO: Click hàng tự găm tên tài khoản sang các Tab form nhập liệu
+                        tr.onclick = () => {
+                            const targetName = user.username || "";
+                            document.getElementById('user_username').value = targetName;
+                            document.getElementById('orch_username').value = targetName;
+                            // Bắn thông báo ngầm cho GM biết đã găm mục tiêu thành công
+                            console.log(`🎯 [GM Tool] Đã khóa găm bộ đệm mục tiêu: ${targetName}`);
+                        };
 
                         tr.innerHTML = `
                             <td><strong>${user.username || 'Unknown'}</strong></td>
                             <td style="color: #ffcc00; font-weight: bold;">${user.coins || 0}</td>
                             <td>${user.total_coins || 0}</td>
                             <td style="color: #00ffcc;">${user.energy || 0}</td>
+                            <td style="color: #ffaa44; font-weight: bold;">${user.farm_energy !== null && user.farm_energy !== undefined ? user.farm_energy : 100}</td>
+                            <td style="color: #b5cea8; font-weight: bold;">${user.upgrade_coins !== null && user.upgrade_coins !== undefined ? user.upgrade_coins : 0}</td>
+                            <td style="color: #ce9178;">${user.current_skin_id || 'Chưa chọn'}</td>
+                            <td style="color: #569cd6;">${user.current_world_id || 'global_room_01'}</td>
                             <td class="json-cell" title='${user.captured || "{}"}'>${user.captured || "{}"}</td>
                         `;
                         tbody.appendChild(tr);
@@ -165,15 +261,176 @@
                     document.getElementById('last-update').innerText = `Làm mới lúc: ${now.toLocaleTimeString()}`;
                 }
             } catch (err) {
-                console.error("Lỗi lấy dữ liệu D1:", err);
-                document.getElementById('last-update').innerText = "Mất kết nối server!";
+                console.error("🚨 [Live DB] Thất bại khi cào dữ liệu users từ két mây D1:", err);
+                document.getElementById('last-update').innerText = "Mất kết nối server Edge!";
             }
         }
 
-        // Khởi động lấy data lần đầu tiên
+        // ==========================================
+        // 👤 TAB 2: THỰC THI GÓI LỆNH ADVANCED USER CHEAT
+        // ==========================================
+        document.getElementById('userCheatForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msgBox = document.getElementById('status-msg-2');
+            const btn = document.getElementById('btn-submit-2');
+            
+            const payload = {
+                username: document.getElementById('user_username').value.trim(),
+                coin: document.getElementById('user_coin').value || 0,
+                upgrade_coins: document.getElementById('user_upgrade_coins').value || 0,
+                farm_energy: document.getElementById('user_farm_energy').value || 0,
+                energy: document.getElementById('user_energy').value || 0,
+                mon_id: document.getElementById('user_mon_id').value.trim(),
+                mon_qty: document.getElementById('user_mon_qty').value || 0,
+                current_skin_id: document.getElementById('user_current_skin_id').value.trim()
+            };
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG PHÓNG LỆNH CAN THIỆP...";
+            msgBox.className = "status-msg-box info-text";
+            msgBox.innerText = "Đang truyền tải mạch mạng xuống Edge D1...";
+
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/cheat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseData = await res.json();
+
+                if (responseData.success) {
+                    msgBox.className = "status-msg-box success-text";
+                    msgBox.innerText = responseData.message || "✅ Bơm thông số tài khoản cá nhân thành công!";
+                    
+                    // Khấu trừ dọn form, giữ lại username để cheat tiếp nếu muốn
+                    document.getElementById('user_coin').value = "";
+                    document.getElementById('user_upgrade_coins').value = "";
+                    document.getElementById('user_farm_energy').value = "";
+                    document.getElementById('user_energy').value = "";
+                    document.getElementById('user_mon_id').value = "";
+                    document.getElementById('user_mon_qty').value = "";
+                    document.getElementById('user_current_skin_id').value = "";
+                    
+                    fetchUsersData(); // Ép làm mới bảng ở Tab 1 ngay lập tức
+                } else {
+                    msgBox.className = "status-msg-box error-text";
+                    msgBox.innerText = "❌ Từ chối: " + responseData.message;
+                }
+            } catch (err) {
+                msgBox.className = "status-msg-box error-text";
+                msgBox.innerText = "❌ Đứt mạch mạng kết nối!";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "⚡ THỰC THI LỆNH USER CHEAT";
+                setTimeout(() => msgBox.innerText = "", 5000);
+            }
+        });
+
+        // ==========================================
+        // 🏡 TAB 3: THỰC THI GÓI LỆNH FARM WORLD CHEAT
+        // ==========================================
+        document.getElementById('worldCheatForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msgBox = document.getElementById('status-msg-3');
+            const btn = document.getElementById('btn-submit-3');
+            
+            const payload = {
+                room_id: document.getElementById('world_room_id').value.trim(),
+                farm_coins: document.getElementById('world_farm_coins').value || 0,
+                house_level: document.getElementById('world_house_level').value || 0,
+                item_id: document.getElementById('world_item_id').value.trim(),
+                item_qty: document.getElementById('world_item_qty').value || 0
+            };
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG ĐẬP PHÁ KHÔNG GIAN PHÒNG...";
+            msgBox.className = "status-msg-box info-text";
+            msgBox.innerText = "Đang hạch toán sửa đổi kho đồ sảnh chơi trực tuyến...";
+
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/cheat-world`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseData = await res.json();
+
+                if (responseData.success) {
+                    msgBox.className = "status-msg-box success-text";
+                    msgBox.innerText = responseData.message || "✅ Can thiệp hạch toán tài sản phòng MMO thành công!";
+                    
+                    document.getElementById('world_farm_coins').value = "";
+                    document.getElementById('world_house_level').value = "";
+                    document.getElementById('world_item_id').value = "";
+                    document.getElementById('world_item_qty').value = "";
+                    
+                    fetchUsersData(); // Cập nhật lại danh sách vì tiền thành viên trong phòng có thể nảy số chéo
+                } else {
+                    msgBox.className = "status-msg-box error-text";
+                    msgBox.innerText = "❌ Lỗi: " + responseData.message;
+                }
+            } catch (err) {
+                msgBox.className = "status-msg-box error-text";
+                msgBox.innerText = "❌ Gãy liên kết mạng nối sang Worker!";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "⚡ THỰC THI LỆNH WORLD CHEAT";
+                setTimeout(() => msgBox.innerText = "", 5000);
+            }
+        });
+
+        // ==========================================
+        // 🌐 TAB 4: THỰC THI ĐIỀU TUYẾN ROUTER KHOẢNG CÁCH SẢNH MẠNG
+        // ==========================================
+        document.getElementById('orchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msgBox = document.getElementById('status-msg-4');
+            const btn = document.getElementById('btn-submit-4');
+            
+            const payload = {
+                room_id: document.getElementById('orch_room_id').value.trim(),
+                username: document.getElementById('orch_username').value.trim()
+            };
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG BẮT CẮM VÁ ROUTER...";
+            msgBox.className = "status-msg-box info-text";
+            msgBox.innerText = "Đang định tuyến dịch chuyển sảnh MMO trực tuyến...";
+
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/orchestrate-world`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseData = await res.json();
+
+                if (responseData.success) {
+                    msgBox.className = "status-msg-box success-text";
+                    msgBox.innerText = responseData.message || "✅ Dịch chuyển phân sảnh không gian thành công!";
+                    
+                    // Giữ lại mã phòng để điều hướng nhiều đứa sang chung một chuồng chơi cho lẹ
+                    document.getElementById('orch_username').value = "";
+                    
+                    fetchUsersData(); // Ép nảy số hiển thị sảnh chơi mới ngoài bảng
+                } else {
+                    msgBox.className = "status-msg-box error-text";
+                    msgBox.innerText = "❌ Thất bại: " + responseData.message;
+                }
+            } catch (err) {
+                msgBox.className = "status-msg-box error-text";
+                msgBox.innerText = "❌ Lỗi kết nối luồng API!";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🚀 KÍCH NỔ ĐIỀU TUYẾN ROUTER";
+                setTimeout(() => msgBox.innerText = "", 5000);
+            }
+        });
+
+        // Kích nổ tiến trình cào dữ liệu sảnh lần đầu tiên
         fetchUsersData();
 
-        // Cài đặt bộ đếm (Polling) liên tục 3 giây / lần y chang Chat
+        // Thiết lập đồng hồ đếm ngầm Polling chu kỳ 3 giây/vòng lặp để giữ live bảng dữ liệu tĩnh
         setInterval(fetchUsersData, 3000);
     </script>
 </body>
