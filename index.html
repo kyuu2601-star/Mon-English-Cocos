@@ -25,6 +25,7 @@
         .panel-content h2.cheat-title { color: #569cd6; }
         .panel-content h2.world-title { color: #ce9178; }
         .panel-content h2.orch-title { color: #dcdcaa; }
+        .panel-content h2.media-title { color: #b5cea8; }
         .panel-content h2 span { font-size: 13px; color: #888; font-weight: normal; }
         
         .table-container { flex: 1; overflow-y: auto; margin-top: 10px; border: 1px solid #2d2d2d; border-radius: 4px; }
@@ -35,7 +36,7 @@
         tr.user-row:hover { background: #2a2d2e; }
         .json-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; color: #ce9178; }
 
-        /* 🛠️ CẤU TRÚC PHÒNG FORM CỦA TAB 2, 3, 4 */
+        /* 🛠️ CẤU TRÚC PHÒNG FORM CỦA TAB 2, 3, 4, 5 */
         .centered-form-wrapper { max-width: 600px; width: 100%; margin: 0 auto; overflow-y: auto; padding-right: 10px; }
         .form-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .full-width-column { grid-column: span 2; }
@@ -54,6 +55,8 @@
         button.btn-world-color:hover { background: #ef5350; }
         button.btn-orch-color { background: #4caf50; }
         button.btn-orch-color:hover { background: #66bb6a; }
+        button.btn-media-color { background: #8675a9; }
+        button.btn-media-color:hover { background: #9a86be; }
         button:disabled { background: #555555 !important; color: #888888 !important; cursor: not-allowed; }
         
         .status-msg-box { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; min-height: 22px; transition: 0.2s; }
@@ -69,6 +72,7 @@
         <div id="tab-btn-2" class="tab-item" onclick="switchActiveTab(2)">👤 (Tab 2) Advanced User Cheat</div>
         <div id="tab-btn-3" class="tab-item" onclick="switchActiveTab(3)">🏡 (Tab 3) Farm World Cheat</div>
         <div id="tab-btn-4" class="tab-item" onclick="switchActiveTab(4)">🌐 (Tab 4) World Orchestrator</div>
+        <div id="tab-btn-5" class="tab-item" onclick="switchActiveTab(5)">🎬 (Tab 5) Quest Media Link</div>
     </div>
 
     <div class="viewport-container">
@@ -94,7 +98,7 @@
                         </tr>
                     </thead>
                     <tbody id="table-body">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -198,6 +202,29 @@
             </div>
         </div>
 
+        <div id="panel-content-5" class="panel-content">
+            <h2 class="media-title">🎬 Quest Media Management (Gắn Link Minh Họa Câu Hỏi)</h2>
+            <div class="centered-form-wrapper">
+                <form id="questMediaForm" class="form-grid-layout">
+                    <div class="form-group full-width-column">
+                        <label>Mã ID Câu hỏi (Question ID / Khóa chính D1):</label>
+                        <input type="text" id="media_question_id" placeholder="Nhập chính xác ID câu hỏi trên hệ thống Sheets, ví dụ: Q101, QUEST_05..." required>
+                    </div>
+                    <div class="form-group full-width-column">
+                        <label>Đường link tài nguyên (Media URL - Hỗ trợ Ảnh hoặc Video):</label>
+                        <input type="url" id="media_url" placeholder="Paste link ảnh (.png, .jpg) hoặc video (.mp4) từ xa vào đây..." required>
+                    </div>
+                    <div class="full-width-column" style="background: #2d2d2d; padding: 15px; border-radius: 6px; font-size: 13px; color: #b5cea8; border: 1px dashed #555; margin-bottom: 10px;">
+                        ⚙️ <strong>Cơ chế cập nhật luồng Edge:</strong> Khi bấm lưu, dữ liệu sẽ được bắn thẳng lên Worker và thực thi câu lệnh UPSERT vào bảng `question_media`. Nếu ID câu hỏi đã có link, hệ thống sẽ tự ghi đè link mới. Các chuỗi link ảnh/video trống sẽ không được chấp nhận.
+                    </div>
+                    <div class="full-width-column">
+                        <button type="submit" id="btn-submit-5" class="btn-execute btn-media-color">💾 LƯU LINK ĐA PHƯƠNG TIỆN CÂU HỎI</button>
+                        <div id="status-msg-5" class="status-msg-box"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -208,8 +235,8 @@
         // 🎛️ COOC XỬ LÝ CHUYỂN ĐỔI TAB HOÁN ĐỔI LƯỚT ĐỘNG
         // ==========================================
         function switchActiveTab(tabIdx) {
-            // Quét sạch trạng thái active cũ của thanh phím hướng
-            for (let i = 1; i <= 4; i++) {
+            // Quét sạch trạng thái active cũ của thanh phím hướng (Hỗ trợ lặp full 5 tab)
+            for (let i = 1; i <= 5; i++) {
                 document.getElementById(`tab-btn-${i}`).classList.remove('active');
                 document.getElementById(`panel-content-${i}`).classList.remove('active');
             }
@@ -239,7 +266,6 @@
                             const targetName = user.username || "";
                             document.getElementById('user_username').value = targetName;
                             document.getElementById('orch_username').value = targetName;
-                            // Bắn thông báo ngầm cho GM biết đã găm mục tiêu thành công
                             console.log(`🎯 [GM Tool] Đã khóa găm bộ đệm mục tiêu: ${targetName}`);
                         };
 
@@ -302,7 +328,6 @@
                     msgBox.className = "status-msg-box success-text";
                     msgBox.innerText = responseData.message || "✅ Bơm thông số tài khoản cá nhân thành công!";
                     
-                    // Khấu trừ dọn form, giữ lại username để cheat tiếp nếu muốn
                     document.getElementById('user_coin').value = "";
                     document.getElementById('user_upgrade_coins').value = "";
                     document.getElementById('user_farm_energy').value = "";
@@ -364,7 +389,7 @@
                     document.getElementById('world_item_id').value = "";
                     document.getElementById('world_item_qty').value = "";
                     
-                    fetchUsersData(); // Cập nhật lại danh sách vì tiền thành viên trong phòng có thể nảy số chéo
+                    fetchUsersData();
                 } else {
                     msgBox.className = "status-msg-box error-text";
                     msgBox.innerText = "❌ Lỗi: " + responseData.message;
@@ -409,10 +434,8 @@
                     msgBox.className = "status-msg-box success-text";
                     msgBox.innerText = responseData.message || "✅ Dịch chuyển phân sảnh không gian thành công!";
                     
-                    // Giữ lại mã phòng để điều hướng nhiều đứa sang chung một chuồng chơi cho lẹ
                     document.getElementById('orch_username').value = "";
-                    
-                    fetchUsersData(); // Ép nảy số hiển thị sảnh chơi mới ngoài bảng
+                    fetchUsersData();
                 } else {
                     msgBox.className = "status-msg-box error-text";
                     msgBox.innerText = "❌ Thất bại: " + responseData.message;
@@ -423,6 +446,55 @@
             } finally {
                 btn.disabled = false;
                 btn.innerText = "🚀 KÍCH NỔ ĐIỀU TUYẾN ROUTER";
+                setTimeout(() => msgBox.innerText = "", 5000);
+            }
+        });
+
+        // ==========================================================================
+        // 🎬 [NEW PROCESS]: TAB 5 THỰC THI GÁN ĐĂNG KÝ MEDIA LINK CHO ID CÂU HỎI
+        // Bắn chung cổng /admin/cheat thông qua nhận diện rẽ nhánh của Worker
+        // ==========================================================================
+        document.getElementById('questMediaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msgBox = document.getElementById('status-msg-5');
+            const btn = document.getElementById('btn-submit-5');
+            
+            const payload = {
+                question_id: document.getElementById('media_question_id').value.trim(),
+                media_url: document.getElementById('media_url').value.trim()
+            };
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG LƯU LINK ĐA PHƯƠNG TIỆN...";
+            msgBox.className = "status-msg-box info-text";
+            msgBox.innerText = "Đang gửi yêu cầu UPSERT tài nguyên lên D1 SQL...";
+
+            try {
+                // Tái tận dụng cổng POST /admin/cheat đã được cấu trúc rẽ nhánh tối ưu ở Worker
+                const res = await fetch(`${WORKER_URL}/admin/cheat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const responseData = await res.json();
+
+                if (responseData.success) {
+                    msgBox.className = "status-msg-box success-text";
+                    msgBox.innerText = responseData.message || "✅ Đã gán link media vào câu hỏi thành công!";
+                    
+                    // Dọn sạch hòm nhập liệu để sẵn sàng nạp ID tiếp theo
+                    document.getElementById('media_question_id').value = "";
+                    document.getElementById('media_url').value = "";
+                } else {
+                    msgBox.className = "status-msg-box error-text";
+                    msgBox.innerText = "❌ Thất bại: " + responseData.message;
+                }
+            } catch (err) {
+                msgBox.className = "status-msg-box error-text";
+                msgBox.innerText = "❌ Không thể kết nối đến máy chủ Cloudflare Worker!";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "💾 LƯU LINK ĐA PHƯƠNG TIỆN CÂU HỎI";
                 setTimeout(() => msgBox.innerText = "", 5000);
             }
         });
