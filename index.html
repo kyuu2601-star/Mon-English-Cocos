@@ -459,9 +459,46 @@
             const msgBox = document.getElementById('status-msg-5');
             const btn = document.getElementById('btn-submit-5');
             
+            let rawUrl = document.getElementById('media_url').value.trim();
+            let cleanUrl = rawUrl;
+
+            // 🔍 GIẢI THUẬT CHUẨN HÓA LINK YOUTUBE THUẦN TÚY (EDGE CLEANER)
+            try {
+                if (rawUrl.includes("youtube.com") || rawUrl.includes("youtu.be")) {
+                    let videoId = "";
+
+                    if (rawUrl.includes("shorts/")) {
+                        // Trường hợp 1: Link dạng shorts (Ví dụ: youtube.com/shorts/abcxyz)
+                        let parts = rawUrl.split("shorts/");
+                        if (parts.length > 1) {
+                            videoId = parts[1].split(/[?#&]/)[0];
+                        }
+                    } else if (rawUrl.includes("youtu.be/")) {
+                        // Trường hợp 2: Link rút gọn (Ví dụ: youtu.be/abcxyz)
+                        let parts = rawUrl.split("youtu.be/");
+                        if (parts.length > 1) {
+                            videoId = parts[1].split(/[?#&]/)[0];
+                        }
+                    } else if (rawUrl.includes("watch")) {
+                        // Trường hợp 3: Link chuẩn (Ví dụ: youtube.com/watch?v=abcxyz)
+                        let urlObj = new URL(rawUrl);
+                        videoId = urlObj.searchParams.get("v");
+                    }
+
+                    // Nếu bóc tách thành công VideoID từ cấu trúc chuỗi, ép định dạng về link thuần túy
+                    if (videoId) {
+                        cleanUrl = "https://www.youtube.com/watch?v=" + videoId;
+                        console.log(`🎬 [Filter] Đã làm sạch link YouTube: ${rawUrl} -> ${cleanUrl}`);
+                    }
+                }
+            } catch (errFilter) {
+                console.error("⚠️ Lỗi phân tích cú pháp chuẩn hóa URL YouTube:", errFilter);
+                // Nếu lỗi phát sinh, giữ lại link gốc làm giải pháp dự phòng an toàn
+            }
+            
             const payload = {
                 question_id: document.getElementById('media_question_id').value.trim(),
-                media_url: document.getElementById('media_url').value.trim()
+                media_url: cleanUrl
             };
 
             btn.disabled = true;
