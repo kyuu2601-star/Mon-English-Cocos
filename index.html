@@ -19,13 +19,14 @@
         .panel-content { display: none; width: 100%; height: 100%; background: #252526; border-radius: 8px; border: 1px solid #333; padding: 20px; flex-direction: column; overflow: hidden; }
         .panel-content.active { display: flex; }
 
-        /* 📊 CẤU TRÚC TAB 1: LIVE DATABASE TOÀN MÀN HÌNH */
+        /* 📊 CẤU TRÚC TAB 1 & TAB 6: LIVE DATABASE TOÀN MÀN HÌNH */
         .panel-content h2 { margin-top: 0; padding-bottom: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .panel-content h2.user-title { color: #4EC9B0; }
         .panel-content h2.cheat-title { color: #569cd6; }
         .panel-content h2.world-title { color: #ce9178; }
         .panel-content h2.orch-title { color: #dcdcaa; }
         .panel-content h2.media-title { color: #b5cea8; }
+        .panel-content h2.queue-title { color: #DCDCAA; }
         .panel-content h2 span { font-size: 13px; color: #888; font-weight: normal; }
         
         .table-container { flex: 1; overflow-y: auto; margin-top: 10px; border: 1px solid #2d2d2d; border-radius: 4px; }
@@ -57,12 +58,16 @@
         button.btn-orch-color:hover { background: #66bb6a; }
         button.btn-media-color { background: #8675a9; }
         button.btn-media-color:hover { background: #9a86be; }
+        button.btn-done-color { background: #d7ba7d; color: #1e1e1e; padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button.btn-done-color:hover { background: #c5a059; }
         button:disabled { background: #555555 !important; color: #888888 !important; cursor: not-allowed; }
         
         .status-msg-box { margin-top: 15px; font-size: 14px; text-align: center; font-weight: bold; min-height: 22px; transition: 0.2s; }
         .success-text { color: #4CAF50; }
         .error-text { color: #f44336; }
         .info-text { color: #9cdcfe; }
+        .badge-pending { background: #ce9178; color: #1e1e1e; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .badge-done { background: #4EC9B0; color: #1e1e1e; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -73,6 +78,7 @@
         <div id="tab-btn-3" class="tab-item" onclick="switchActiveTab(3)">🏡 (Tab 3) Farm World Cheat</div>
         <div id="tab-btn-4" class="tab-item" onclick="switchActiveTab(4)">🌐 (Tab 4) World Orchestrator</div>
         <div id="tab-btn-5" class="tab-item" onclick="switchActiveTab(5)">🎬 (Tab 5) Quest Media Link</div>
+        <div id="tab-btn-6" class="tab-item" onclick="switchActiveTab(6)">🎁 (Tab 6) Gift Queue Manager</div>
     </div>
 
     <div class="viewport-container">
@@ -225,6 +231,32 @@
             </div>
         </div>
 
+        <!-- 🎁 TAB 6: GIFT QUEUE MANAGER (D1 LIVE QUEUE) -->
+        <div id="panel-content-6" class="panel-content">
+            <h2 class="queue-title">🎁 Quản Lý Hàng Đợi Quà Tặng (Gift Queue - Cloudflare D1) <span id="queue-last-update">Đang quét...</span></h2>
+            <div style="background: #2d2d2d; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 13px; color: #888;">
+                💡 <strong>Hướng dẫn Admin:</strong> Bảng hiển thị danh sách học sinh bấm mua quà từ Shop in-game. Bấm nút <strong>"Đánh dấu Hoàn Thành"</strong> để đổi trạng thái `status` của đơn hàng từ `pending` sang `done` trong D1.
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Đơn</th>
+                            <th>Username</th>
+                            <th>Item ID</th>
+                            <th>Item Name</th>
+                            <th>Coin Price</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queue-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -235,8 +267,8 @@
         // 🎛️ COOC XỬ LÝ CHUYỂN ĐỔI TAB HOÁN ĐỔI LƯỚT ĐỘNG
         // ==========================================
         function switchActiveTab(tabIdx) {
-            // Quét sạch trạng thái active cũ của thanh phím hướng (Hỗ trợ lặp full 5 tab)
-            for (let i = 1; i <= 5; i++) {
+            // Quét sạch trạng thái active cũ của thanh phím hướng (Hỗ trợ lặp full 6 tab)
+            for (let i = 1; i <= 6; i++) {
                 document.getElementById(`tab-btn-${i}`).classList.remove('active');
                 document.getElementById(`panel-content-${i}`).classList.remove('active');
             }
@@ -289,6 +321,91 @@
             } catch (err) {
                 console.error("🚨 [Live DB] Thất bại khi cào dữ liệu users từ két mây D1:", err);
                 document.getElementById('last-update').innerText = "Mất kết nối server Edge!";
+            }
+        }
+
+        // ==========================================
+        // 🎁 🆕 TAB 6: POLLING CÀO DỮ LIỆU HÀNG ĐỢI QUÀ (GIFT QUEUE - 3S/LẦN)
+        // ==========================================
+        async function fetchGiftQueueData() {
+            try {
+                const res = await fetch(`${WORKER_URL}/api/admin/queue`);
+                const data = await res.json();
+                
+                if (data.success && Array.isArray(data.data)) {
+                    const tbody = document.getElementById('queue-table-body');
+                    tbody.innerHTML = "";
+                    
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888;">Không có đơn mua quà nào đang chờ xử lý.</td></tr>`;
+                    } else {
+                        data.data.forEach(order => {
+                            const tr = document.createElement('tr');
+                            const timeStr = order.created_at ? new Date(parseInt(order.created_at)).toLocaleString() : 'N/A';
+                            const isPending = order.status && order.status.toLowerCase() === 'pending';
+                            const statusBadge = isPending 
+                                ? `<span class="badge-pending">PENDING</span>` 
+                                : `<span class="badge-done">DONE</span>`;
+                            
+                            const actionBtn = isPending 
+                                ? `<button class="btn-done-color" onclick="markOrderDone(${order.id}, this)">✔ Đánh dấu Hoàn Thành</button>` 
+                                : `<span style="color: #888;">Đã xong</span>`;
+
+                            tr.innerHTML = `
+                                <td><strong>#${order.id}</strong></td>
+                                <td style="color: #4EC9B0; font-weight: bold;">${order.username || 'Unknown'}</td>
+                                <td style="color: #ce9178; font-family: monospace;">${order.item_id || 'N/A'}</td>
+                                <td>${order.item_name || 'Món quà'}</td>
+                                <td style="color: #ffcc00; font-weight: bold;">${order.coin_price || 0} Xu</td>
+                                <td>${statusBadge}</td>
+                                <td style="font-size: 12px; color: #aaa;">${timeStr}</td>
+                                <td>${actionBtn}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    
+                    let now = new Date();
+                    document.getElementById('queue-last-update').innerText = `Làm mới lúc: ${now.toLocaleTimeString()}`;
+                }
+            } catch (err) {
+                console.error("🚨 [Gift Queue] Thất bại khi cào dữ liệu gift_queue từ D1:", err);
+                document.getElementById('queue-last-update').innerText = "Mất kết nối server Edge!";
+            }
+        }
+
+        async function markOrderDone(queueId, btnElem) {
+            if (!confirm(`Xác nhận đánh dấu đơn quà #${queueId} là ĐÃ HOÀN THÀNH?`)) return;
+            
+            if (btnElem) {
+                btnElem.disabled = true;
+                btnElem.innerText = "ĐANG DUYỆT...";
+            }
+
+            try {
+                const res = await fetch(`${WORKER_URL}/api/admin/queue/done`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: queueId })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    console.log(`✅ [Gift Queue] Đã duyệt đơn quà #${queueId} sang DONE thành công!`);
+                    fetchGiftQueueData(); // Reload lại bảng Queue ngay
+                } else {
+                    alert("❌ Lỗi duyệt đơn quà: " + (data.message || "Không xác định"));
+                    if (btnElem) {
+                        btnElem.disabled = false;
+                        btnElem.innerText = "✔ Đánh dấu Hoàn Thành";
+                    }
+                }
+            } catch (err) {
+                alert("❌ Lỗi kết nối mạng máy chủ!");
+                if (btnElem) {
+                    btnElem.disabled = false;
+                    btnElem.innerText = "✔ Đánh dấu Hoàn Thành";
+                }
             }
         }
 
@@ -451,8 +568,7 @@
         });
 
         // ==========================================================================
-        // 🎬 [NEW PROCESS]: TAB 5 THỰC THI GÁN ĐĂNG KÝ MEDIA LINK CHO ID CÂU HỎI
-        // Bắn chung cổng /admin/cheat thông qua nhận diện rẽ nhánh của Worker
+        // 🎬 TAB 5: THỰC THI GÁN ĐĂNG KÝ MEDIA LINK CHO ID CÂU HỎI
         // ==========================================================================
         document.getElementById('questMediaForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -468,24 +584,20 @@
                     let videoId = "";
 
                     if (rawUrl.includes("shorts/")) {
-                        // Trường hợp 1: Link dạng shorts (Ví dụ: youtube.com/shorts/abcxyz)
                         let parts = rawUrl.split("shorts/");
                         if (parts.length > 1) {
                             videoId = parts[1].split(/[?#&]/)[0];
                         }
                     } else if (rawUrl.includes("youtu.be/")) {
-                        // Trường hợp 2: Link rút gọn (Ví dụ: youtu.be/abcxyz)
                         let parts = rawUrl.split("youtu.be/");
                         if (parts.length > 1) {
                             videoId = parts[1].split(/[?#&]/)[0];
                         }
                     } else if (rawUrl.includes("watch")) {
-                        // Trường hợp 3: Link chuẩn (Ví dụ: youtube.com/watch?v=abcxyz)
                         let urlObj = new URL(rawUrl);
                         videoId = urlObj.searchParams.get("v");
                     }
 
-                    // Nếu bóc tách thành công VideoID từ cấu trúc chuỗi, ép định dạng về link thuần túy
                     if (videoId) {
                         cleanUrl = "https://www.youtube.com/watch?v=" + videoId;
                         console.log(`🎬 [Filter] Đã làm sạch link YouTube: ${rawUrl} -> ${cleanUrl}`);
@@ -493,7 +605,6 @@
                 }
             } catch (errFilter) {
                 console.error("⚠️ Lỗi phân tích cú pháp chuẩn hóa URL YouTube:", errFilter);
-                // Nếu lỗi phát sinh, giữ lại link gốc làm giải pháp dự phòng an toàn
             }
             
             const payload = {
@@ -507,7 +618,6 @@
             msgBox.innerText = "Đang gửi yêu cầu UPSERT tài nguyên lên D1 SQL...";
 
             try {
-                // Tái tận dụng cổng POST /admin/cheat đã được cấu trúc rẽ nhánh tối ưu ở Worker
                 const res = await fetch(`${WORKER_URL}/admin/cheat`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -519,7 +629,6 @@
                     msgBox.className = "status-msg-box success-text";
                     msgBox.innerText = responseData.message || "✅ Đã gán link media vào câu hỏi thành công!";
                     
-                    // Dọn sạch hòm nhập liệu để sẵn sàng nạp ID tiếp theo
                     document.getElementById('media_question_id').value = "";
                     document.getElementById('media_url').value = "";
                 } else {
@@ -538,9 +647,13 @@
 
         // Kích nổ tiến trình cào dữ liệu sảnh lần đầu tiên
         fetchUsersData();
+        fetchGiftQueueData();
 
-        // Thiết lập đồng hồ đếm ngầm Polling chu kỳ 3 giây/vòng lặp để giữ live bảng dữ liệu tĩnh
-        setInterval(fetchUsersData, 3000);
+        // Thiết lập đồng hồ đếm ngầm Polling chu kỳ 3 giây/vòng lặp để giữ live bảng dữ liệu
+        setInterval(() => {
+            fetchUsersData();
+            fetchGiftQueueData();
+        }, 3000);
     </script>
 </body>
 </html>
