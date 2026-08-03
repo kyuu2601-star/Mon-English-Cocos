@@ -100,7 +100,7 @@
                             <th>Upgrade Coins</th>
                             <th>Skin ID</th>
                             <th>World ID</th>
-                            <th>Captured Mons (JSON)</th>
+                            <th>Total Mon</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -182,6 +182,27 @@
                         <div id="status-msg-3" class="status-msg-box"></div>
                     </div>
                 </form>
+
+                <!-- 🆕 BẢNG TRẠNG THÁI CÁC THẾ GIỚI NÔNG TRẠI (LIVE) -->
+                <div style="margin-top: 25px;">
+                    <h3 style="color: #ce9178; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 15px;">
+                        🌍 Trạng Thái Các Thế Giới
+                        <span id="world-last-update" style="font-size: 12px; color: #888; font-weight: normal;">Đang quét...</span>
+                    </h3>
+                    <div class="table-container" style="max-height: 320px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Room ID</th>
+                                    <th>House Level</th>
+                                    <th>Farm Coins</th>
+                                    <th>Inventory</th>
+                                </tr>
+                            </thead>
+                            <tbody id="world-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -310,7 +331,7 @@
                             <td style="color: #b5cea8; font-weight: bold;">${user.upgrade_coins !== null && user.upgrade_coins !== undefined ? user.upgrade_coins : 0}</td>
                             <td style="color: #ce9178;">${user.current_skin_id || 'Chưa chọn'}</td>
                             <td style="color: #569cd6;">${user.current_world_id || 'Chưa có'}</td>
-                            <td class="json-cell" title='${user.captured || "{}"}'>${user.captured || "{}"}</td>
+                            <td style="color: #dcdcaa; font-weight: bold;">${user.total_mon || 0}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -321,6 +342,62 @@
             } catch (err) {
                 console.error("🚨 [Live DB] Thất bại khi cào dữ liệu users từ két mây D1:", err);
                 document.getElementById('last-update').innerText = "Mất kết nối server Edge!";
+            }
+        }
+
+        // ==========================================
+        // 🌍 🆕 TAB 3: POLLING CÀO DỮ LIỆU TRẠNG THÁI CÁC THẾ GIỚI (3S/LẦN)
+        // ==========================================
+        function renderInventoryGrid(inventoryStr) {
+            let obj = {};
+            try {
+                obj = typeof inventoryStr === "string" ? JSON.parse(inventoryStr || "{}") : (inventoryStr || {});
+            } catch (e) {
+                return `<span style="color:#f44336;">JSON lỗi</span>`;
+            }
+            const keys = Object.keys(obj);
+            if (keys.length === 0) {
+                return `<span style="color:#666;">Trống</span>`;
+            }
+            return `<div style="display:flex; flex-wrap:wrap; gap:6px;">` +
+                keys.map(k => `
+                    <div style="background:#3c3c3c; border:1px solid #555; border-radius:4px; padding:4px 8px; font-size:12px; white-space:nowrap;">
+                        <span style="color:#ce9178;">${k}</span>: <span style="color:#4EC9B0; font-weight:bold;">${obj[k]}</span>
+                    </div>
+                `).join('') +
+                `</div>`;
+        }
+
+        async function fetchWorldsData() {
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/get-all-worlds`);
+                const data = await res.json();
+
+                if (data.success && Array.isArray(data.data)) {
+                    const tbody = document.getElementById('world-table-body');
+                    tbody.innerHTML = "";
+
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Chưa có thế giới nào được khởi tạo.</td></tr>`;
+                    } else {
+                        data.data.forEach(world => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><strong style="color:#569cd6;">${world.room_id}</strong></td>
+                                <td style="color:#ffaa44; font-weight:bold;">${world.house_level ?? 1}</td>
+                                <td style="color:#ffcc00; font-weight:bold;">${world.farm_coins ?? 0}</td>
+                                <td>${renderInventoryGrid(world.inventory)}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+
+                    let now = new Date();
+                    document.getElementById('world-last-update').innerText = `Làm mới lúc: ${now.toLocaleTimeString()}`;
+                }
+            } catch (err) {
+                console.error("🚨 [Farm World] Thất bại khi cào dữ liệu thế giới từ D1:", err);
+                document.getElementById('world-last-update').innerText = "Mất kết nối server Edge!";
             }
         }
 
@@ -507,6 +584,7 @@
                     document.getElementById('world_item_qty').value = "";
                     
                     fetchUsersData();
+                    fetchWorldsData();
                 } else {
                     msgBox.className = "status-msg-box error-text";
                     msgBox.innerText = "❌ Lỗi: " + responseData.message;
@@ -648,11 +726,13 @@
         // Kích nổ tiến trình cào dữ liệu sảnh lần đầu tiên
         fetchUsersData();
         fetchGiftQueueData();
+        fetchWorldsData();
 
         // Thiết lập đồng hồ đếm ngầm Polling chu kỳ 3 giây/vòng lặp để giữ live bảng dữ liệu
         setInterval(() => {
             fetchUsersData();
             fetchGiftQueueData();
+            fetchWorldsData();
         }, 3000);
     </script>
 </body>
