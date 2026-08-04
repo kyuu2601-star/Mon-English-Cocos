@@ -145,6 +145,10 @@
                         <label>Ép thay đổi trang phục Avatar (Skin ID):</label>
                         <input type="text" id="user_current_skin_id" placeholder="Nhập chuỗi định danh, ví dụ: Avatar_2, Avatar_3...">
                     </div>
+                    <div class="form-group full-width-column">
+                        <label>💌 Lời nhắn tùy chỉnh gửi kèm hộp thư (Bỏ trống = tự soạn mặc định):</label>
+                        <input type="text" id="user_custom_message" placeholder="Ví dụ: Chúc mừng con đã đạt Học sinh xuất sắc tháng 8! Đây là phần thưởng dành cho con...">
+                    </div>
                     <div class="full-width-column">
                         <button type="submit" id="btn-submit-2" class="btn-execute btn-user-color">⚡ THỰC THI LỆNH USER CHEAT</button>
                         <div id="status-msg-2" class="status-msg-box"></div>
@@ -502,7 +506,8 @@
                 energy: document.getElementById('user_energy').value || 0,
                 mon_id: document.getElementById('user_mon_id').value.trim(),
                 mon_qty: document.getElementById('user_mon_qty').value || 0,
-                current_skin_id: document.getElementById('user_current_skin_id').value.trim()
+                current_skin_id: document.getElementById('user_current_skin_id').value.trim(),
+                custom_message: document.getElementById('user_custom_message').value.trim()
             };
 
             btn.disabled = true;
@@ -529,6 +534,7 @@
                     document.getElementById('user_mon_id').value = "";
                     document.getElementById('user_mon_qty').value = "";
                     document.getElementById('user_current_skin_id').value = "";
+                    document.getElementById('user_custom_message').value = "";
                     
                     fetchUsersData(); // Ép làm mới bảng ở Tab 1 ngay lập tức
                 } else {
