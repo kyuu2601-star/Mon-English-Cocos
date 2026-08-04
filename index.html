@@ -502,7 +502,7 @@
             const msgBox = document.getElementById('status-msg-2');
             const btn = document.getElementById('btn-submit-2');
             
-            const payload = {
+        const payload = {
                 username: document.getElementById('user_username').value.trim(),
                 coin: document.getElementById('user_coin').value || 0,
                 upgrade_coins: document.getElementById('user_upgrade_coins').value || 0,
@@ -511,6 +511,7 @@
                 mon_id: document.getElementById('user_mon_id').value.trim(),
                 mon_qty: document.getElementById('user_mon_qty').value || 0,
                 current_skin_id: document.getElementById('user_current_skin_id').value.trim(),
+                custom_title: document.getElementById('user_custom_title').value.trim(),
                 custom_message: document.getElementById('user_custom_message').value.trim()
             };
 
