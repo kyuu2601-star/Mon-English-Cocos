@@ -153,6 +153,10 @@
                         <label>💌 Lời nhắn tùy chỉnh gửi kèm hộp thư (Bỏ trống = tự soạn mặc định):</label>
                         <input type="text" id="user_custom_message" placeholder="Ví dụ: Chúc mừng con đã đạt Học sinh xuất sắc tháng 8! Đây là phần thưởng dành cho con...">
                     </div>
+                    <div class="form-group full-width-column" style="flex-direction: row; align-items: center; gap: 10px; background: #2d2d2d; padding: 12px; border-radius: 6px;">
+                        <input type="checkbox" id="user_claimable" style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="user_claimable" style="margin: 0; cursor: pointer;">🎁 Bắt học sinh bấm "Claim" trong thư mới nhận quà (không cộng ngay)</label>
+                    </div>
                     <div class="full-width-column">
                         <button type="submit" id="btn-submit-2" class="btn-execute btn-user-color">⚡ THỰC THI LỆNH USER CHEAT</button>
                         <div id="status-msg-2" class="status-msg-box"></div>
@@ -512,7 +516,8 @@
                 mon_qty: document.getElementById('user_mon_qty').value || 0,
                 current_skin_id: document.getElementById('user_current_skin_id').value.trim(),
                 custom_title: document.getElementById('user_custom_title').value.trim(),
-                custom_message: document.getElementById('user_custom_message').value.trim()
+                custom_message: document.getElementById('user_custom_message').value.trim(),
+                claimable: document.getElementById('user_claimable').checked
             };
 
             btn.disabled = true;
@@ -541,6 +546,7 @@
                     document.getElementById('user_current_skin_id').value = "";
                     document.getElementById('user_custom_title').value = "";
                     document.getElementById('user_custom_message').value = "";
+                    document.getElementById('user_claimable').checked = false;
                     
                     fetchUsersData(); // Ép làm mới bảng ở Tab 1 ngay lập tức
                 } else {
