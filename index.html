@@ -87,7 +87,7 @@
         <div id="panel-content-1" class="panel-content active">
             <h2 class="user-title">📊 Live Database Users (Cloudflare D1) <span id="last-update">Đang quét...</span></h2>
             <div style="background: #2d2d2d; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 13px; color: #888;">
-                💡 <strong>Mẹo GM:</strong> Nhấp chuột vào bất kỳ dòng hàng của người chơi nào bên dưới để hệ thống tự động găm tên tài khoản đó sang Form nhập liệu ở Tab 2 và Tab 4!
+                💡 <strong>Mẹo GM:</strong> Nhấp chuột vào tên của người chơi bên dưới để hệ thống tự động gắn tên tài khoản đó sang Form nhập liệu ở Tab 2 và Tab 4!
             </div>
             <div class="table-container">
                 <table>
@@ -119,44 +119,44 @@
                         <input type="text" id="user_username" placeholder="Rice,Kem,Dau hoặc All hoặc click chọn 1 dòng ở Tab 1" required>
                     </div>
                     <div class="form-group">
-                        <label>Cộng thêm Xu thường (Coins):</label>
+                        <label>Cộng thêm Coins:</label>
                         <input type="number" id="user_coin" placeholder="Ví dụ: 100, -50...">
                     </div>
                     <div class="form-group">
-                        <label>Cộng thêm Xu nâng cấp (Upgrade):</label>
+                        <label>Cộng thêm Upgrade Coins:</label>
                         <input type="number" id="user_upgrade_coins" placeholder="Ví dụ: 10, 25...">
                     </div>
                     <div class="form-group">
-                        <label>Cộng thêm Thể lực cày vườn:</label>
+                        <label>Cộng thêm Farm Energy:</label>
                         <input type="number" id="user_farm_energy" placeholder="Ví dụ: 20, 50...">
                     </div>
                     <div class="form-group">
-                        <label>Cộng thêm Thể lực đấu trường:</label>
+                        <label>Cộng thêm Energy:</label>
                         <input type="number" id="user_energy" placeholder="Ví dụ: 5, 10...">
                     </div>
                     <div class="form-group">
-                        <label>Bơm ID thú thú cưng (Mon ID):</label>
+                        <label>Nhập Mon ID:</label>
                         <input type="text" id="user_mon_id" placeholder="Ví dụ: 1001, E02...">
                     </div>
                     <div class="form-group">
-                        <label>Số lượng thú cưng nạp thêm:</label>
+                        <label>Số lượng Mon nạp thêm:</label>
                         <input type="number" id="user_mon_qty" placeholder="Nhập số lượng, ví dụ: 1...">
                     </div>
                     <div class="form-group full-width-column">
-                        <label>Ép thay đổi trang phục Avatar (Skin ID):</label>
+                        <label>Ép thay đổi trang phục Farm (Skin ID):</label>
                         <input type="text" id="user_current_skin_id" placeholder="Nhập chuỗi định danh, ví dụ: Avatar_2, Avatar_3...">
                     </div>
                     <div class="form-group full-width-column">
-                        <label>📌 Tiêu đề thư tùy chỉnh (Bỏ trống = tự đặt mặc định):</label>
+                        <label>📌 Tiêu đề thư (Bỏ trống = tiêu đề mặc định):</label>
                         <input type="text" id="user_custom_title" placeholder="Ví dụ: 🏆 Học Sinh Xuất Sắc Tháng 8!">
                     </div>
                     <div class="form-group full-width-column">
-                        <label>💌 Lời nhắn tùy chỉnh gửi kèm hộp thư (Bỏ trống = tự soạn mặc định, có thể xuống dòng):</label>
+                        <label>💌 Lời nhắn gửi kèm (Bỏ trống = tin nhắn mặc định mặc định, có thể xuống dòng):</label>
                         <textarea id="user_custom_message" rows="4" placeholder="Ví dụ: Chúc mừng con đã đạt Học sinh xuất sắc tháng 8!&#10;Đây là phần thưởng dành cho con, cố gắng phát huy nhé!" style="width: 100%; padding: 11px; background: #3c3c3c; border: 1px solid #555; color: #fff; border-radius: 4px; outline: none; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
                     </div>
                     <div class="form-group full-width-column" style="flex-direction: row; align-items: center; gap: 10px; background: #2d2d2d; padding: 12px; border-radius: 6px;">
                         <input type="checkbox" id="user_claimable" style="width: 20px; height: 20px; cursor: pointer;">
-                        <label for="user_claimable" style="margin: 0; cursor: pointer;">🎁 Bắt học sinh bấm "Claim" trong thư mới nhận quà (không cộng ngay)</label>
+                        <label for="user_claimable" style="margin: 0; cursor: pointer;">🎁 Claimable</label>
                     </div>
                     <div class="full-width-column">
                         <button type="submit" id="btn-submit-2" class="btn-execute btn-user-color">⚡ THỰC THI LỆNH USER CHEAT</button>
@@ -167,23 +167,23 @@
         </div>
 
         <div id="panel-content-3" class="panel-content">
-            <h2 class="world-title">🏡 Can Thiệp Thế Giới Nông Trại Chung (Farm World Assets)</h2>
+            <h2 class="world-title">🏡 Can Thiệp Farm World</h2>
             <div class="centered-form-wrapper">
                 <form id="worldCheatForm" class="form-grid-layout">
                     <div class="form-group full-width-column">
-                        <label>Mã định danh Phòng chơi (Room ID / Bắt buộc):</label>
+                        <label>Room ID / Bắt buộc:</label>
                         <input type="text" id="world_room_id" placeholder="Ví dụ: global_room_01, global_room_02..." required>
                     </div>
                     <div class="form-group">
-                        <label>Cộng thêm Quỹ xu chung phòng:</label>
+                        <label>Cộng thêm Farm Coins:</label>
                         <input type="number" id="world_farm_coins" placeholder="Nhập số tiền nạp thêm vào quỹ phòng...">
                     </div>
                     <div class="form-group">
-                        <label>Ép đặt cấp độ Nhà chung (Level):</label>
-                        <input type="number" id="world_house_level" placeholder="Nhập cấp độ ép đặt, ví dụ: 1, 2, 3...">
+                        <label>Pick House Level:</label>
+                        <input type="number" id="world_house_level" placeholder="Nhập cấp độ nhà, ví dụ: 1, 2, 3...">
                     </div>
                     <div class="form-group">
-                        <label>Tên vật phẩm nạp kho tài nguyên:</label>
+                        <label>Tên vật phẩm nạp kho items:</label>
                         <input type="text" id="world_item_id" placeholder="Ví dụ: wood_log, mine_stone, crop_potato...">
                     </div>
                     <div class="form-group">
@@ -224,11 +224,11 @@
             <div class="centered-form-wrapper">
                 <form id="orchForm" class="form-grid-layout">
                     <div class="form-group full-width-column">
-                        <label>Mã sảnh thế giới online đích (Target Room ID):</label>
+                        <label>Target Room ID:</label>
                         <input type="text" id="orch_room_id" placeholder="Nhập mã phòng muốn chuyển đến hoặc tạo mới..." required>
                     </div>
                     <div class="form-group full-width-column">
-                        <label>Username học sinh cần định tuyến di chuyển:</label>
+                        <label>Username học sinh cần di chuyển:</label>
                         <input type="text" id="orch_username" placeholder="Nhập tên tài khoản hoặc click chọn ở Tab 1..." required>
                     </div>
                     <div class="full-width-column" style="background: #2d2d2d; padding: 15px; border-radius: 6px; font-size: 13px; color: #aaa; border: 1px dashed #444; margin-bottom: 10px;">
@@ -247,11 +247,11 @@
             <div class="centered-form-wrapper">
                 <form id="questMediaForm" class="form-grid-layout">
                     <div class="form-group full-width-column">
-                        <label>Mã ID Câu hỏi (Question ID / Khóa chính D1):</label>
+                        <label>Question ID / Khóa chính D1:</label>
                         <input type="text" id="media_question_id" placeholder="Nhập chính xác ID câu hỏi trên hệ thống Sheets, ví dụ: Q101, QUEST_05..." required>
                     </div>
                     <div class="form-group full-width-column">
-                        <label>Đường link tài nguyên (Media URL - Hỗ trợ Ảnh hoặc Video):</label>
+                        <label>Media URL - Hỗ trợ Ảnh hoặc Video:</label>
                         <input type="url" id="media_url" placeholder="Paste link ảnh (.png, .jpg) hoặc video (.mp4) từ xa vào đây..." required>
                     </div>
                     <div class="full-width-column" style="background: #2d2d2d; padding: 15px; border-radius: 6px; font-size: 13px; color: #b5cea8; border: 1px dashed #555; margin-bottom: 10px;">
@@ -269,7 +269,7 @@
         <div id="panel-content-6" class="panel-content">
             <h2 class="queue-title">🎁 Quản Lý Hàng Đợi Quà Tặng (Gift Queue - Cloudflare D1) <span id="queue-last-update">Đang quét...</span></h2>
             <div style="background: #2d2d2d; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 13px; color: #888;">
-                💡 <strong>Hướng dẫn Admin:</strong> Bảng hiển thị danh sách học sinh bấm mua quà từ Shop in-game. Bấm nút <strong>"Đánh dấu Hoàn Thành"</strong> để đổi trạng thái `status` của đơn hàng từ `pending` sang `done` trong D1.
+                💡 <strong>Hướng dẫn Admin:</strong> Bảng hiển thị danh sách học sinh bấm mua quà từ Shop in-game. Bấm nút <strong>"Hoàn Thành"</strong> để đổi trạng thái status của đơn hàng từ PENDING sang `DONE trong D1.
             </div>
             <div class="table-container">
                 <table>
@@ -304,7 +304,7 @@
                 </div>
 
          <div class="form-group full-width-column">
-                    <label>Chọn (nhiều) mức sao muốn ép cứng — không tick gì = Random bình thường:</label>
+                    <label>Chọn mức sao — không tick gì = Random bình thường:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #2d2d2d; padding: 12px; border-radius: 6px;">
                         <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-weight: normal;">
                             <input type="checkbox" class="force-star-checkbox" value="1" style="width: 18px; height: 18px; cursor: pointer;"> 1 Sao
@@ -322,7 +322,7 @@
                             <input type="checkbox" class="force-star-checkbox" value="5" style="width: 18px; height: 18px; cursor: pointer;"> 5 Sao
                         </label>
                         <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-weight: normal;">
-                            <input type="checkbox" class="force-star-checkbox" value="E" style="width: 18px; height: 18px; cursor: pointer;"> Boss Rank E
+                            <input type="checkbox" class="force-star-checkbox" value="E" style="width: 18px; height: 18px; cursor: pointer;"> Rank E
                         </label>
                     </div>
                 </div>
@@ -481,7 +481,7 @@
                                 : `<span class="badge-done">DONE</span>`;
                             
                             const actionBtn = isPending 
-                                ? `<button class="btn-done-color" onclick="markOrderDone(${order.id}, this)">✔ Đánh dấu Hoàn Thành</button>` 
+                                ? `<button class="btn-done-color" onclick="markOrderDone(${order.id}, this)">Hoàn Thành</button>` 
                                 : `<span style="color: #888;">Đã xong</span>`;
 
                             tr.innerHTML = `
