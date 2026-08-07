@@ -73,12 +73,13 @@
 <body>
 
     <div class="tab-navigation">
-        <div id="tab-btn-1" class="tab-item active" onclick="switchActiveTab(1)">📊 (Tab 1) Live DB Users</div>
-        <div id="tab-btn-2" class="tab-item" onclick="switchActiveTab(2)">👤 (Tab 2) Advanced User Cheat</div>
-        <div id="tab-btn-3" class="tab-item" onclick="switchActiveTab(3)">🏡 (Tab 3) Farm World Cheat</div>
-        <div id="tab-btn-4" class="tab-item" onclick="switchActiveTab(4)">🌐 (Tab 4) World Orchestrator</div>
-        <div id="tab-btn-5" class="tab-item" onclick="switchActiveTab(5)">🎬 (Tab 5) Quest Media Link</div>
-        <div id="tab-btn-6" class="tab-item" onclick="switchActiveTab(6)">🎁 (Tab 6) Gift Queue Manager</div>
+        <div id="tab-btn-1" class="tab-item active" onclick="switchActiveTab(1)">📊 Live DB Users</div>
+        <div id="tab-btn-2" class="tab-item" onclick="switchActiveTab(2)">👤 Advanced User Cheat</div>
+        <div id="tab-btn-3" class="tab-item" onclick="switchActiveTab(3)">🏡 Farm World Cheat</div>
+        <div id="tab-btn-4" class="tab-item" onclick="switchActiveTab(4)">🌐 World Orchestrator</div>
+        <div id="tab-btn-5" class="tab-item" onclick="switchActiveTab(5)">🎬 Quest Media Link</div>
+        <div id="tab-btn-6" class="tab-item" onclick="switchActiveTab(6)">🎁 Gift Queue Manager</div>
+        <div id="tab-btn-7" class="tab-item" onclick="switchActiveTab(7)">🎯 Debug Force Star (Kyuu)</div>
     </div>
 
     <div class="viewport-container">
@@ -290,6 +291,38 @@
             </div>
         </div>
 
+        <!-- 🎯 TAB 7: DEBUG FORCE QUESTION STAR - CHỈ ÁP DỤNG CHO TÀI KHOẢN "Kyuu" -->
+        <div id="panel-content-7" class="panel-content">
+            <h2 class="orch-title">🎯 Debug: Ép Cứng Mức Sao Câu Hỏi (Chỉ áp dụng cho tài khoản "Kyuu")</h2>
+            <div class="centered-form-wrapper">
+                <div style="background: #2d2d2d; padding: 15px; border-radius: 6px; font-size: 13px; color: #ce9178; border: 1px dashed #555; margin-bottom: 20px;">
+                    ⚠️ <strong>Lưu ý:</strong> Tính năng này CHỈ tác động lên tài khoản test <strong>"Kyuu"</strong> (hardcode cứng ở Worker, không thể chọn tài khoản khác). Dùng để test nhanh câu hỏi/quái ở mức sao mong muốn mà không cần chờ random. Không ảnh hưởng bất kỳ học sinh nào khác.
+                </div>
+
+                <div style="text-align: center; margin-bottom: 15px; font-size: 14px; color: #9cdcfe;">
+                    Trạng thái hiện tại: <strong id="current-force-star-status">Đang tải...</strong>
+                </div>
+
+                <div class="form-group full-width-column">
+                    <label>Chọn mức sao muốn ép cứng:</label>
+                    <select id="debug_force_star" style="width: 100%; padding: 11px; background: #3c3c3c; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 14px;">
+                        <option value="">-- Tắt ép cứng, quay về Random bình thường --</option>
+                        <option value="1">1 Sao</option>
+                        <option value="2">2 Sao</option>
+                        <option value="3">3 Sao</option>
+                        <option value="4">4 Sao</option>
+                        <option value="5">5 Sao</option>
+                        <option value="E">Boss Rank E</option>
+                    </select>
+                </div>
+
+                <div class="full-width-column">
+                    <button type="button" id="btn-submit-7" class="btn-execute btn-orch-color" onclick="submitForceStar()">🎯 ÁP DỤNG NGAY CHO TÀI KHOẢN "Kyuu"</button>
+                    <div id="status-msg-7" class="status-msg-box"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -301,7 +334,7 @@
         // ==========================================
         function switchActiveTab(tabIdx) {
             // Quét sạch trạng thái active cũ của thanh phím hướng (Hỗ trợ lặp full 6 tab)
-            for (let i = 1; i <= 6; i++) {
+            for (let i = 1; i <= 7; i++) {
                 document.getElementById(`tab-btn-${i}`).classList.remove('active');
                 document.getElementById(`panel-content-${i}`).classList.remove('active');
             }
@@ -741,10 +774,72 @@
             }
         });
 
+        // ==========================================================================
+        // 🎯 TAB 7: DEBUG FORCE QUESTION STAR (CHỈ ÁP DỤNG CHO "Kyuu")
+        // ==========================================================================
+        async function fetchCurrentForceStarStatus() {
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/get-force-question-star`);
+                const data = await res.json();
+                const statusEl = document.getElementById('current-force-star-status');
+                if (!statusEl) return;
+
+                if (data.success) {
+                    const star = data.star || "";
+                    statusEl.innerText = star === "" ? "🎲 Random bình thường (không ép)" : `🔒 Đang ép cứng mức [${star}]`;
+                    statusEl.style.color = star === "" ? "#888" : "#4CAF50";
+
+                    const selectEl = document.getElementById('debug_force_star');
+                    if (selectEl) selectEl.value = star;
+                } else {
+                    statusEl.innerText = "Không tải được trạng thái!";
+                }
+            } catch (err) {
+                console.error("🚨 [Debug Force Star] Lỗi tải trạng thái:", err);
+            }
+        }
+
+        async function submitForceStar() {
+            const msgBox = document.getElementById('status-msg-7');
+            const btn = document.getElementById('btn-submit-7');
+            const star = document.getElementById('debug_force_star').value;
+
+            btn.disabled = true;
+            btn.innerText = "ĐANG ÁP DỤNG...";
+            msgBox.className = "status-msg-box info-text";
+            msgBox.innerText = "Đang gửi lệnh ép cứng lên Worker...";
+
+            try {
+                const res = await fetch(`${WORKER_URL}/admin/force-question-star`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ star: star })
+                });
+                const responseData = await res.json();
+
+                if (responseData.success) {
+                    msgBox.className = "status-msg-box success-text";
+                    msgBox.innerText = responseData.message;
+                    fetchCurrentForceStarStatus();
+                } else {
+                    msgBox.className = "status-msg-box error-text";
+                    msgBox.innerText = "❌ " + responseData.message;
+                }
+            } catch (err) {
+                msgBox.className = "status-msg-box error-text";
+                msgBox.innerText = "❌ Lỗi kết nối mạng!";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🎯 ÁP DỤNG NGAY CHO TÀI KHOẢN \"Kyuu\"";
+                setTimeout(() => msgBox.innerText = "", 5000);
+            }
+        }
+
         // Kích nổ tiến trình cào dữ liệu sảnh lần đầu tiên
         fetchUsersData();
         fetchGiftQueueData();
         fetchWorldsData();
+        fetchCurrentForceStarStatus();
 
         // Thiết lập đồng hồ đếm ngầm Polling chu kỳ 3 giây/vòng lặp để giữ live bảng dữ liệu
         setInterval(() => {
