@@ -121,6 +121,10 @@
                     <div class="form-group">
                         <label>Cộng thêm Coins:</label>
                         <input type="number" id="user_coin" placeholder="Ví dụ: 100, -50...">
+                        <label style="display: flex; align-items: center; gap: 6px; margin-top: 8px; font-weight: normal; font-size: 12px; color: #ce9178; cursor: pointer;">
+                            <input type="checkbox" id="user_deduct_from_total" style="width: 16px; height: 16px; cursor: pointer;">
+                            Tác động vào Total Coins
+                        </label>
                     </div>
                     <div class="form-group">
                         <label>Cộng thêm Upgrade Coins:</label>
@@ -561,7 +565,8 @@
                 current_skin_id: document.getElementById('user_current_skin_id').value.trim(),
                 custom_title: document.getElementById('user_custom_title').value.trim(),
                 custom_message: document.getElementById('user_custom_message').value.trim(),
-                claimable: document.getElementById('user_claimable').checked
+                claimable: document.getElementById('user_claimable').checked,
+                deduct_from_total: document.getElementById('user_deduct_from_total').checked
             };
 
             btn.disabled = true;
@@ -591,6 +596,7 @@
                     document.getElementById('user_custom_title').value = "";
                     document.getElementById('user_custom_message').value = "";
                     document.getElementById('user_claimable').checked = false;
+                    document.getElementById('user_deduct_from_total').checked = false;
                     
                     fetchUsersData(); // Ép làm mới bảng ở Tab 1 ngay lập tức
                 } else {
