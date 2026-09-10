@@ -344,6 +344,8 @@
         // Địa chỉ kết nối Edge Cloudflare Worker
         const WORKER_URL = "https://sync-sheet-worker.kyuu2601.workers.dev"; 
 
+        const RENDER_URL = "https://mon-english-socket-server.onrender.com";
+
         // ==========================================
         // 🎛️ COOC XỬ LÝ CHUYỂN ĐỔI TAB HOÁN ĐỔI LƯỚT ĐỘNG
         // ==========================================
@@ -635,7 +637,7 @@
             msgBox.innerText = "Đang hạch toán sửa đổi kho đồ sảnh chơi trực tuyến...";
 
             try {
-                const res = await fetch(`${WORKER_URL}/admin/cheat-world`, {
+                const res = await fetch(`${RENDER_URL}/admin/cheat-world`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
