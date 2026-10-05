@@ -35,6 +35,13 @@
         th { background: #333333; color: #dcdcaa; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid #2d2d2d; }
         tr.user-row { cursor: pointer; transition: 0.15s; }
         tr.user-row:hover { background: #2a2d2e; }
+        .monthly-count { font-weight: bold; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .monthly-red { color: #ff6b6b; }
+        .monthly-yellow { color: #ffd54f; }
+        .monthly-green { color: #69db7c; }
+        .monthly-purple { color: #b197fc; }
+        .monthly-pink { color: #ff87c3; }
+        .monthly-unknown { color: #aaa; }
         .json-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: monospace; font-size: 12px; color: #ce9178; }
 
         /* 🛠️ CẤU TRÚC PHÒNG FORM CỦA TAB 2, 3, 4, 5 */
@@ -94,6 +101,7 @@
                     <thead>
                         <tr>
                             <th>Username</th>
+                            <th id="monthly-correct-header" title="Số câu trả lời đúng trong tháng hiện tại (giờ Việt Nam)">Correct</th>
                             <th>Coins (Current)</th>
                             <th>Total Coins</th>
                             <th>Energy (Quiz)</th>
@@ -363,18 +371,49 @@
         // ==========================================
         // 📊 TAB 1: POLLING CÀO DỮ LIỆU ĐÁM MÂY DIỆN RỘNG (3S/LẦN)
         // ==========================================
+        // Same UTC+7 month boundary as monthlyLeaderboardMonth in the Worker.
+        function currentVietnamMonth(now = Date.now()) {
+            return new Date(now + 7 * 60 * 60 * 1000).toISOString().slice(0, 7);
+        }
+
+        function monthlyCorrectCount(user, month) {
+            // Missing API fields are unknown, not a confirmed zero.
+            if (!Object.prototype.hasOwnProperty.call(user, 'leaderboard_month') ||
+                !Object.prototype.hasOwnProperty.call(user, 'monthly_correct_count')) return null;
+            if (user.leaderboard_month !== month) return 0;
+            const count = Number(user.monthly_correct_count);
+            return Number.isFinite(count) ? Math.max(0, Math.trunc(count)) : null;
+        }
+
+        function monthlyCorrectClass(count) {
+            if (count === null) return 'monthly-unknown';
+            if (count > 1000) return 'monthly-pink';
+            if (count > 500) return 'monthly-purple';
+            if (count > 400) return 'monthly-green';
+            if (count >= 300) return 'monthly-yellow';
+            return 'monthly-red';
+        }
+
+        let usersFetchInFlight = false;
         async function fetchUsersData() {
+            if (usersFetchInFlight) return;
+            usersFetchInFlight = true;
             try {
-                const res = await fetch(`${WORKER_URL}/admin/get-all-users`);
+                const res = await fetch(`${WORKER_URL}/admin/get-all-users`, { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const data = await res.json();
+                if (!data.success || !Array.isArray(data.data)) throw new Error(data.message || 'Dữ liệu user không hợp lệ');
                 
                 if (data.success && Array.isArray(data.data)) {
                     const tbody = document.getElementById('table-body');
                     tbody.innerHTML = ""; // Giải phóng cấu trúc HTML cũ
+                    const month = currentVietnamMonth();
+                    document.getElementById('monthly-correct-header').textContent = `Correct ${month.slice(5)}/${month.slice(0, 4)}`;
                     
                     data.data.forEach(user => {
                         const tr = document.createElement('tr');
                         tr.className = "user-row";
+                        const monthlyCount = monthlyCorrectCount(user, month);
                         
                         // Cơ chế ĐỒNG BỘ CHÉO: Click hàng tự găm tên tài khoản sang các Tab form nhập liệu
                         tr.onclick = () => {
@@ -386,6 +425,7 @@
 
                         tr.innerHTML = `
                             <td><strong>${user.username || 'Unknown'}</strong></td>
+                            <td class="monthly-count ${monthlyCorrectClass(monthlyCount)}" title="${monthlyCount === null ? 'API chưa trả dữ liệu câu đúng tháng' : 'Số câu đúng tháng ' + month + ' (giờ Việt Nam)'}">${monthlyCount === null ? '—' : monthlyCount.toLocaleString('vi-VN')}</td>
                             <td style="color: #ffcc00; font-weight: bold;">${user.coins || 0}</td>
                             <td>${user.total_coins || 0}</td>
                             <td style="color: #00ffcc;">${user.energy || 0}</td>
@@ -404,6 +444,8 @@
             } catch (err) {
                 console.error("🚨 [Live DB] Thất bại khi cào dữ liệu users từ két mây D1:", err);
                 document.getElementById('last-update').innerText = "Mất kết nối server Edge!";
+            } finally {
+                usersFetchInFlight = false;
             }
         }
 
